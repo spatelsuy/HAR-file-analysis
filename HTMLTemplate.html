@@ -1,0 +1,43 @@
+<!-- Template.html file. You can design your own-->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>HAR File Report</title>
+    <style>
+        table {
+            width: 90%;
+            border-collapse: collapse;
+        }
+        th, td {
+            border: 1px solid black;
+            padding: 4px;
+            text-align: left;
+			word-wrap: break-word;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+    </style>
+</head>
+<body>
+    <h1>HAR File Report</h1>
+    <table>
+        <tr>
+            <th>URL</th>
+            <th>Status</th>
+            <th>Time (ms)</th>
+            <th>Method</th>
+        </tr>
+        {% for entry in entries %}
+        <tr>
+            <td><div style = "width:500px; word-wrap: break-word">{{ entry.request.url }}</div></td>
+            <td>{{ entry.response.status }}</td>
+            <td>{{ entry.time }}</td>
+            <td>{{ entry.request.method }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+</body>
+</html>
