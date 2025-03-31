@@ -27,12 +27,144 @@ A HAR file is a JSON-formatted archive file that records network activities duri
 
 Generating a HAR file is done using the developer tools in web browsers. Here's how you can create a HAR file in Chrome or Edge or Firefox
 
-`
-Open Chrome and navigate to the webpage you want to analyze.  
+>Open Chrome and navigate to the webpage you want to analyze.  
 Open Developer Tools (Right-click on the page > Inspect > Network tab) or use Ctrl+Shift+INote: it is "inspect Element" in Mozilla.  
 Reload the page to capture all network requests.  
 Right-click within the Network tab and select "Save all as HAR with content".  
 Save the HAR file to your computer.  
-`
+
 While developing or debugging a web application from a Web Browser, one can open "Developer tool" and monitor network interaction and its behavior.
+
+## Security Considerations - Sanitizing HAR file
+
+HAR file can contain sensitive information, such as cookies and authentication tokens. Always sanitize HAR file before sharing; protect confidential data.
+
+### Sanitizing manually
+
+Open the HAR File: HAR file is JSON file, so you can open it with any text editor.
+
+Locate Confidential Information: Search for sensitive information such as "Authorization", "Cookie", or any other headers or fields that might contain credentials or personal data.
+
+Remove or Mask Confidential Information: Delete the values of these sensitive fields or replace them with another text.
+
+Save the Edited HAR File: Save the changes to the HAR file after removing or masking the confidential information.
+
+### Sanitizing using tool
+
+If you have Node.js installed, you can use  har-sanitizer to automatically remove sensitive information
+
+```
+npm install -g har-sanitizer
+har-sanitizer -i input.har -o output.har
+```
+
+### Best practice:
+
+_While certain types of data may universally be considered sensitive (e.g., personal identifiable information), the specific categories or criteria for what constitutes sensitive data may differ depending on the organization's industry, regulatory requirements, and internal policies. Therefore, the best practice is to perform a manual review of the sanitized file. This ensures that all proprietary, personal, and sensitive information is thoroughly removed, aligning with your organization's specific privacy and security policies. Manual verification adds an essential layer of scrutiny that automated processes might miss, thereby safeguarding against inadvertent data exposure. You can develop your own sanitize API based on the need._
+
+
+## Enhance readability - View HAR file as HTML
+
+Converting a HAR file to HTML provides a structured, accessible, and flexible way to analyze and share network activity data. It transforms raw JSON data into a format that is more user-friendly, allowing for better insights and effective communication.
+
+
+## The Code to convert HAR file to HTML
+Please find a sample code, it is one of the many ways to convert an HAR file to HTML.  
+We will be using **Python**, so let install jinja2
+```
+pip install jinja2
+```
+
+>Jinja2 is commonly used for rendering HTML templates.
+
+***The Python code.***
+
+```
+# This script converts a HAR (HTTP Archive) file into an HTML file 
+# using the Jinja2 templating engine. The script reads the HAR file, 
+# processes the network request/response data, 
+# and outputs a formatted HTML report.
+#
+# Requirements
+# Python 3.x
+# jinja2 library
+# pip install jinja2
+
+import json
+from jinja2 import Environment, FileSystemLoader
+
+def convert_har_to_html(har_file, output_file):
+    # Load the HAR data
+    with open(har_file, encoding="utf8") as file:
+        har_data = json.load(file)
+    
+    # Extract entries
+    entries = har_data['log']['entries']
+    
+    # Load the template
+    env = Environment(loader=FileSystemLoader('.'))
+    template = env.get_template('Template.html')
+    
+    # Render the HTML
+    html_content = template.render(entries=entries)
+    
+    # Save the output
+    with open(output_file, 'w') as file:
+        file.write(html_content)
+    print(f'Converted {har_file} to {output_file}')
+
+if __name__ == "__main__":
+    input_har_file = "input.har"
+    output_html_file = "output.html"
+    convert_har_to_html(input_har_file, output_html_file)
+
+```
+
+***The HTML Template file***
+
+```
+<!-- Template.html file. You can design your own-->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>HAR File Report</title>
+    <style>
+        table {
+            width: 90%;
+            border-collapse: collapse;
+        }
+        th, td {
+            border: 1px solid black;
+            padding: 4px;
+            text-align: left;
+			word-wrap: break-word;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+    </style>
+</head>
+<body>
+    <h1>HAR File Report</h1>
+    <table>
+        <tr>
+            <th>URL</th>
+            <th>Status</th>
+            <th>Time (ms)</th>
+            <th>Method</th>
+        </tr>
+        {% for entry in entries %}
+        <tr>
+            <td><div style = "width:500px; word-wrap: break-word">{{ entry.request.url }}</div></td>
+            <td>{{ entry.response.status }}</td>
+            <td>{{ entry.time }}</td>
+            <td>{{ entry.request.method }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+</body>
+</html>
+```
 
